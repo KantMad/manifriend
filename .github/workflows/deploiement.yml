@@ -146,7 +146,8 @@ jobs:
           "
       - name: Installation
         run: |
-          git branch -f main HEAD
+          # mise-a-jour.sh suit la branche main : elle doit exister (sur une PR, la copie est détachée)
+          [ "$(git branch --show-current)" = main ] || git branch -f main HEAD
           sudo git config --global --add safe.directory '*'
           # la base de test tourne sur cette machine : le pare-feu installé doit la laisser joignable (Neon, lui, est sur Internet)
           sudo ufw allow 5432/tcp

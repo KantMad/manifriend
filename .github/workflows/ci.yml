@@ -70,7 +70,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       # Les noms d'image Docker doivent être en minuscules
       - id: name
-        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/manif-friend" >> "$GITHUB_OUTPUT"
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@v6
         with:
           push: true
