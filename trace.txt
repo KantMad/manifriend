@@ -1,0 +1,3 @@
+::notice::Tracé via ign : 164 points ; étapes : Place de la République = Place de la République 75003 Paris | Boulevard de Magenta = Boulevard de Magenta 75010 Paris | Barbès = Barbès-Rochechouart | Boulevard de Rochechouart = Boulevard Marguerite de Rochechouart 75018 Paris | Place Pigalle = Place Pigalle 75009 Paris | Place de Clichy = Place de Clichy 75018 Paris
+::notice::Tracé via ign : 246 points ; étapes : République = République | Gare du Nord = Gare du Nord | Barbès = Barbès-Rochechouart | Pigalle = Pigalle | Clichy = Clichy
+::notice::Tracé via ign : 33 points ; étapes : Place de la République = Place de la République 75003 Paris | Nation = Église Saint-Joseph des Nations

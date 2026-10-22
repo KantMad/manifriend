@@ -1,0 +1,43 @@
+✓ Démosphère toulouse : 212 évènements lus, 1 manifs repérées, 0 localisées — non localisées : SIVENS 12 ans après Rassemblement
+✓ Démosphère rennes : 62 évènements lus, 2 manifs repérées, 2 localisées
+✓ Démosphère lille : 34 évènements lus, 1 manifs repérées, 1 localisées
+✓ Démosphère gironde : 32 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère strasbourgfurieuse : 171 évènements lus, 2 manifs repérées, 2 localisées
+✓ Démosphère nice : 19 évènements lus, 1 manifs repérées, 1 localisées
+✓ Démosphère pyrenees : 551 évènements lus, 4 manifs repérées, 4 localisées
+✓ Démosphère tarn : 109 évènements lus, 1 manifs repérées, 1 localisées
+✓ Démosphère sarthe : 58 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère lot : 29 évènements lus, 2 manifs repérées, 2 localisées
+✓ Démosphère ariege : 16 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère gard : 12 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère carcassonne : 8 évènements lus, 1 manifs repérées, 1 localisées
+✓ Démosphère dunkerque : 12 évènements lus, 3 manifs repérées, 2 localisées — non localisées : Mobilisations du 24 octobre (Nord)
+✓ Démosphère poitiers : 4 évènements lus, 1 manifs repérées, 1 localisées
+✓ Démosphère berry : 20 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère aveyron : 2 évènements lus, 0 manifs repérées, 0 localisées
+✓ Démosphère 05 : 21 évènements lus, 2 manifs repérées, 2 localisées
+✓ Démosphère paris : 2 évènements lus, 0 manifs repérées, 0 localisées
+✓ Mobilizon mobilizon.fr : 101 évènements lus, 1 manifs repérées, 1 localisées
+✓ Paris-luttes.info : 121 évènements lus, 0 manifs repérées, 0 localisées
+
+20 manifs trouvées, dont 9 publiées automatiquement (🤖) :
+🤖 2026-10-22 14:00 | Strasbourg | La mobilisation continue - appel à manifester | Place Kléber, 67000 Strasbourg, France | 48.5833,7.7455 | https://strasbourgfurieuse.demosphere.net/rv/10075
+-  2026-10-24 06:30 | Rennes | Blocage général | Partout | 48.1109,-1.6837 (approx.) | https://rennes.demosphere.net/rdv/19864 | à valider : lieu approximatif
+-  2026-10-24 10:00 | Figeac | Manifestation  Qui sème la misère récolte la colère | aux jardins de l’hôpital de Figeac. | 44.6092,2.0242 (approx.) | https://lot.demosphere.net/rv/8600 | à valider : lieu approximatif
+-  2026-10-24 11:00 | Lannemezan | Convergence des luttes ACTE II | Sortie 16, 30 rue Peyrehitte, 65300 Lannemezan | 43.1250,0.3924 | https://pyrenees.demosphere.net/rv/52593 | à valider : titre peu clair
+🤖 2026-10-24 14:00 | Rennes | Manifestation contre la vie chère | Place de Bretagne Rennes | 48.1092,-1.6842 | https://rennes.demosphere.net/rdv/19868
+🤖 2026-10-24 14:00 | Strasbourg | Appel à la mobilisation par l'AG nationale des lycéens | Place Kléber, 67000 Strasbourg, France | 48.5833,7.7455 | https://strasbourgfurieuse.demosphere.net/rv/10076
+-  2026-10-24 14:00 | Toulouse | Mobilisation ! - Manifestation à Toulouse : Toutes et tous dans la rue ! | Métro Jean Jaurès, 16 Allées du Président Franklin Roosevelt, 31000 Toulouse | 43.7562,-0.6791 (approx.) | https://pyrenees.demosphere.net/rv/52592 | à valider : lieu approximatif
+🤖 2026-10-24 14:00 | Barcelonette | Mobilisation suite au 17 octobre | Place du marché | 44.3885,6.6406 | https://05.demosphere.net/rv/5179
+🤖 2026-10-24 14:30 | Lille Centre | Colère sociale : Lycéens, étudiants, travailleurs rejoignez les manifestations | Place de la République, Lille, Métro République Beaux-Arts | 50.6311,3.0604 | https://lille.demosphere.net/rv/11689
+🤖 2026-10-24 14:30 | Carcassonne | Manifestation Square André Chénier pour la jeunesse, contre la vie chère... | Square André Chénier, 11000 Carcassonne | 43.2119,2.3569 | https://carcassonne.demosphere.net/rv/4141
+🤖 2026-10-28 17:30 | St-Gaudens | Solidarité avec la Palestine : rassemblement à St-Go | Sous-préfecture, Place du maréchal Juin, 31800 Saint-Gaudens | 43.1091,0.7264 | https://pyrenees.demosphere.net/rv/52629
+🤖 2026-10-30 07:30 | Boussens | Rassemblement et action contre la fabrication de drones tueurs à Boussens | Rond point et Aire de covoiturage de Boussens, D817, 31360 Boussens, 43°10'34.2' | 43.1767,0.9598 | https://pyrenees.demosphere.net/rv/52089
+-  2026-11-05 08:00 | Dunkerque | Journée interprofessionnelle unitaire de grèves et manifestations | partout en France | 51.0283,2.3465 (approx.) | https://dunkerque.demosphere.net/rv/4551 | à valider : lieu approximatif
+🤖 2026-11-05 09:30 | Nice | grève et des manifestations interprofessionnelles | Place Garibaldi, 06300 Nice, France | 43.7010,7.2804 | https://nice.demosphere.net/rv/7059
+-  2026-11-07 11:00 | Cahors | 🇵🇸 Invitation au rassemblement de solidarité avec le peuple palestinien | Parvis de la Mairie de Cahors | 44.4576,1.4383 (approx.) | https://lot.demosphere.net/rv/8599 | à valider : lieu approximatif
+-  2026-11-07 14:30 | Poitiers | Manifestation Un toit est un droit | Place de la Mairie | 46.5671,0.3322 | https://poitiers.demosphere.net/rv/4538 | à valider : trop lointaine
+-  2026-11-08 10:30 | Carmaux | Manifestation pacifiste 8 novembre 26 | Colonne de la Paix, Parc Jean Jaurès, 81400 Carmaux | 44.0504,2.1561 | https://tarn.demosphere.net/rv/26105 | à valider : trop lointaine
+-  2026-11-11 15:00 |  | RASSEMBLEMENT pour la réhabilitation collective des fusillés pour l'exemple de 14-18 | Place du Général de Gaulle | 49.4909,0.1080 | https://mobilizon.fr/events/c5026ba0-ebfe-4723-ae9c-89764452ddf8 | à valider : source à valider à la main
+-  2026-11-14 14:00 | Gap | Marche climat | Parc de la pépinière | 44.5496,6.0695 | https://05.demosphere.net/rv/5175 | à valider : trop lointaine
+-  2026-11-20 09:00 | Dunkerque | Grève internationale des étudiants contre la guerre | partout en France | 51.0283,2.3465 (approx.) | https://dunkerque.demosphere.net/rv/4470 | à valider : lieu approximatif
