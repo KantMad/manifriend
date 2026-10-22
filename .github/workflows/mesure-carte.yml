@@ -1,0 +1,34 @@
+name: Mesure de la carte
+
+# Taille et durée d'extraction de la carte pour une zone et des niveaux de zoom donnés
+on:
+  workflow_dispatch:
+    inputs:
+      bbox:
+        description: "Zone (lon_min,lat_min,lon_max,lat_max) ; France par défaut, Île-de-France : 1.44,48.12,3.56,49.24"
+        default: "-5.3,41.2,9.7,51.2"
+      zooms:
+        description: "Niveaux de zoom maximum à mesurer (liste JSON)"
+        default: "[12, 13, 14]"
+
+permissions:
+  contents: read
+
+jobs:
+  mesure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        zoom: ${{ fromJSON(inputs.zooms) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extraction zoom ${{ matrix.zoom }}
+        env:
+          MAP_BBOX: ${{ inputs.bbox }}
+          MAP_MAXZOOM: ${{ matrix.zoom }}
+        run: |
+          start=$(date +%s)
+          sh scripts/download-map.sh carte/zone.pmtiles
+          echo "::notice::Zone $MAP_BBOX zoom $MAP_MAXZOOM : $(du -h carte/zone.pmtiles | cut -f1), $(( $(date +%s) - start )) s"

@@ -1,0 +1,93 @@
+# Mise en ligne : Manif Friend + Caddy (HTTPS automatique avec Let's Encrypt)
+# 1. cp .env.example .env  puis remplir DOMAIN, ADMIN_KEY, SERVER_SECRET
+# 2. docker compose up -d
+services:
+  app:
+    build: .
+    image: manif-friend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATA_DIR: /data
+      ADMIN_KEY: ${ADMIN_KEY:-} # clé principale (facultative si des clés individuelles existent)
+      SERVER_SECRET: ${SERVER_SECRET:?SERVER_SECRET manquant dans .env}
+      TRUST_PROXY: "1" # derrière Caddy : on lit l'IP réelle dans X-Forwarded-For
+      LEGAL_EDITEUR: ${LEGAL_EDITEUR:-}
+      LEGAL_DIRECTEUR: ${LEGAL_DIRECTEUR:-}
+      LEGAL_CONTACT: ${LEGAL_CONTACT:-}
+      LEGAL_HEBERGEUR: ${LEGAL_HEBERGEUR:-}
+      LEGAL_HEBERGEUR_ADRESSE: ${LEGAL_HEBERGEUR_ADRESSE:-}
+      LEGAL_DATE: ${LEGAL_DATE:-}
+      LEGAL_TEST: ${LEGAL_TEST:-0}
+      # Facultatif : base Postgres au lieu du fichier /data/db.json
+      DATABASE_URL: ${DATABASE_URL:-}
+    volumes:
+      - app-data:/data
+      - carte:/carte:ro
+    # Pas de port publié : l'appli n'est joignable qu'à travers Caddy
+    # Une connexion temps réel = un fichier ouvert : on autorise largement plus que le nombre de téléphones visés
+    ulimits:
+      nofile: { soft: 65536, hard: 65536 }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # Journal limité aux erreurs et au démarrage (l'appli n'écrit ni IP, ni position, ni pseudo) : 3 × 1 Mo max
+    logging:
+      driver: json-file
+      options: { max-size: "1m", max-file: "3" }
+
+  # Sauvegarde quotidienne de la base dans ./sauvegardes (14 jours gardés)
+  sauvegarde:
+    image: alpine:3.20
+    restart: unless-stopped
+    command: sh /deploy/sauvegarde.sh
+    environment:
+      SAUVEGARDE_JOURS: ${SAUVEGARDE_JOURS:-14}
+    volumes:
+      - app-data:/data:ro
+      - ./sauvegardes:/sauvegardes
+      - ./deploy/sauvegarde.sh:/deploy/sauvegarde.sh:ro
+
+  # Télécharge la carte de France dans le volume « carte » au démarrage (puis s'arrête).
+  # L'appli fonctionne déjà pendant ce temps (tuiles OpenStreetMap), et bascule seule sur la carte.
+  carte:
+    image: alpine:3.20
+    restart: "no"
+    command: sh -c "apk add --no-cache curl >/dev/null && sh /scripts/download-map.sh /carte/carte.pmtiles"
+    environment:
+      MAP_MAXZOOM: ${MAP_MAXZOOM:-14}
+      MAP_BBOX: ${MAP_BBOX:-}
+    volumes:
+      - ./scripts:/scripts:ro
+      - carte:/carte
+    logging:
+      driver: "none"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ulimits:
+      nofile: { soft: 65536, hard: 65536 }
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN manquant dans .env}
+      EXTRA_DOMAINS: ${EXTRA_DOMAINS:-}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  app-data:
+  carte:
+  caddy-data:
+  caddy-config:

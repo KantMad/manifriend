@@ -1,0 +1,21 @@
+# Image pour l'hébergement de test gratuit (Render) : pas de disque, donc la carte est intégrée à l'image.
+# Seule l'Île-de-France est incluse (la France entière fait plusieurs Go) ; ailleurs, l'appli
+# utilise les tuiles OpenStreetMap.
+FROM alpine:3.20 AS carte
+RUN apk add --no-cache curl
+COPY scripts/download-map.sh /download-map.sh
+ARG MAP_BBOX=1.44,48.12,3.56,49.24
+ARG MAP_MAXZOOM=15
+RUN MAP_BBOX="$MAP_BBOX" MAP_MAXZOOM="$MAP_MAXZOOM" MAP_MAX_AGE_DAYS=0 sh /download-map.sh /carte/carte.pmtiles
+
+FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . .
+COPY --from=carte /carte/carte.pmtiles /app/map/carte.pmtiles
+ENV PORT=3000 DATA_DIR=/data MAP_FILE=/app/map/carte.pmtiles NODE_ENV=production
+RUN mkdir -p /data && chown node:node /data
+EXPOSE 3000
+USER node
+CMD ["node", "server.js"]

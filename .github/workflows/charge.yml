@@ -1,0 +1,31 @@
+name: Test de charge
+
+# Simule une manif : 5 000 téléphones en groupes de 5, positions toutes les 5 s, signalements.
+# Échoue si des téléphones ne se connectent pas ou si les signalements deviennent trop lents.
+on:
+  push:
+    branches: [main]
+    paths: ['server.js', 'lib/**', 'scripts/load-test.js', 'package*.json']
+  pull_request:
+    paths: ['server.js', 'lib/**', 'scripts/load-test.js', 'package*.json']
+  workflow_dispatch:
+    inputs:
+      clients:
+        description: Nombre de téléphones simulés
+        default: '5000'
+
+permissions:
+  contents: read
+
+jobs:
+  charge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: ulimit -n 65536 && node scripts/load-test.js --clients ${{ github.event.inputs.clients || '5000' }} --minutes 2

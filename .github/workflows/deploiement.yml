@@ -1,0 +1,177 @@
+name: Test de déploiement
+
+# Installe tout comme sur un vrai serveur (docker compose : appli, carte, sauvegarde, Caddy en HTTPS)
+# avec une petite carte de Paris, puis vérifie le site de bout en bout.
+on:
+  push:
+    branches: [main]
+    paths: ['Dockerfile', 'Dockerfile.render', 'docker-compose.yml', 'deploy/**', 'scripts/**', 'server.js', 'lib/**', 'public/**', 'package*.json', '.github/workflows/deploiement.yml']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploiement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Configuration (.env de test)
+        run: |
+          cat > .env <<EOT
+          DOMAIN=localhost
+          ADMIN_KEY=cle-principale-de-test
+          SERVER_SECRET=$(openssl rand -hex 32)
+          MAP_BBOX=2.25,48.80,2.45,48.92
+          MAP_MAXZOOM=12
+          EOT
+      - name: Démarrage (docker compose up)
+        run: docker compose up -d --build
+      - name: Carte téléchargée
+        run: |
+          for i in $(seq 1 60); do
+            st=$(docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' $(docker compose ps -aq carte))
+            [ "$st" = "exited 0" ] && echo "carte prête" && break
+            case "$st" in exited*) echo "::error::service carte : $st"; docker compose logs carte; exit 1;; esac
+            sleep 5
+          done
+      - name: Appli en bonne santé
+        run: |
+          for i in $(seq 1 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' $(docker compose ps -q app))" = healthy ] && echo ok && exit 0
+            sleep 3
+          done
+          echo "::error::l'appli n'est pas « healthy »"; docker compose ps; docker compose logs app; exit 1
+      - name: Vérification de bout en bout (HTTPS via Caddy)
+        run: node scripts/smoke-test.js https://localhost --insecure --expect-map --key cle-principale-de-test
+      - name: Clés individuelles (création, connexion, révocation)
+        run: |
+          KEY=$(docker compose exec -T app node scripts/organizers.js add "Test CI" | grep -oE '[A-Za-z0-9_-]{24}' | head -1)
+          [ -n "$KEY" ] || { echo "::error::clé non créée"; exit 1; }
+          node scripts/smoke-test.js https://localhost --insecure --key "$KEY" | grep -q "clé organisateur·ice acceptée" || { echo "::error::clé individuelle refusée"; exit 1; }
+          docker compose exec -T app node scripts/organizers.js remove "Test CI"
+          docker compose exec -T app node scripts/organizers.js list
+      - name: Données conservées après redémarrage
+        run: |
+          cat > /tmp/persist.js <<'JS'
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+          const { io } = require(process.cwd() + '/node_modules/socket.io-client');
+          const fs = require('fs');
+          const [mode] = process.argv.slice(2);
+          // set : création d'un compte, jeton de session gardé ; check : la session et le pseudo ont survécu
+          const token = mode === 'set' ? 'jeton-de-persistance-ci-0123456789' : fs.readFileSync('/tmp/persist-token', 'utf8');
+          const s = io('https://localhost', { auth: { token }, transports: ['websocket'], rejectUnauthorized: false });
+          s.on('init', async (init) => {
+            if (mode === 'set') {
+              const r = await new Promise((res) => s.emit('account:register', { name: 'Persistant', password: 'persistance-ci-mdp' }, res));
+              if (!r.ok) { console.log('::error::création de compte : ' + r.error); process.exit(1); }
+              fs.writeFileSync('/tmp/persist-token', r.token);
+            } else if (init.me.nickname !== 'Persistant' || !init.me.account) { console.log('::error::compte ou session perdu après redémarrage'); process.exit(1); }
+            console.log('ok', mode); process.exit(0);
+          });
+          setTimeout(() => { console.log('::error::pas de connexion'); process.exit(1); }, 15000);
+          JS
+          node /tmp/persist.js set
+          sleep 2
+          docker compose restart app
+          for i in $(seq 1 30); do [ "$(docker inspect -f '{{.State.Health.Status}}' $(docker compose ps -q app))" = healthy ] && break; sleep 3; done
+          node /tmp/persist.js check
+      - name: Sauvegarde
+        run: |
+          docker compose exec -T sauvegarde sh -c 'SAUVEGARDE_UNE_FOIS=1 sh /deploy/sauvegarde.sh'
+          sudo ls -l sauvegardes/
+          f=$(sudo sh -c 'ls sauvegardes/db-*.json' | head -1)
+          [ -n "$f" ] || { echo "::error::aucune sauvegarde"; exit 1; }
+          sudo grep -q Persistant "$f" || { echo "::error::sauvegarde incomplète"; exit 1; }
+          [ "$(sudo stat -c %a "$f")" = 600 ] || { echo "::error::sauvegarde lisible par d'autres ($(sudo stat -c %a "$f"))"; exit 1; }
+      - name: Journaux sans données personnelles
+        run: |
+          docker compose logs app > app.log 2>&1
+          cat app.log
+          if grep -E "Vérif|Persistant|verif-|jeton-de-persistance|48\.86|2\.36" app.log; then echo "::error::donnée personnelle dans les journaux"; exit 1; fi
+      - name: Arrêt
+        if: always()
+        run: docker compose down -v
+
+  # Image de la version de test gratuite (Render) : carte d'Île-de-France intégrée
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construction (Dockerfile.render)
+        run: docker build -f Dockerfile.render -t manif-friend-render .
+      - name: Démarrage et vérifications
+        run: |
+          docker run -d --name mf -p 3000:10000 -e PORT=10000 -e SERVER_SECRET=test -e LEGAL_TEST=1 manif-friend-render
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:3000/healthz && break; sleep 2; done
+          curl -fs http://127.0.0.1:3000/healthz | grep -q '"ok":true' || { echo "::error::healthz"; docker logs mf; exit 1; }
+          cfg=$(curl -fs http://127.0.0.1:3000/config.json); echo "$cfg"
+          echo "$cfg" | grep -q '"partial":true' || { echo "::error::carte d'Île-de-France absente : $cfg"; exit 1; }
+          code=$(curl -s -o /dev/null -w '%{http_code}' -r 0-126 http://127.0.0.1:3000/map/carte.pmtiles)
+          [ "$code" = 206 ] || { echo "::error::carte non servie ($code)"; exit 1; }
+          echo "::notice::Image Render : $(docker image inspect manif-friend-render --format '{{.Size}}' | awk '{printf "%d Mo", $1/1048576}')"
+
+  # Installation en une commande (deploy/install.sh) sur une machine Ubuntu neuve, comme sur un VPS
+  installation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Base de la version de test à reprendre (comme Neon)
+        run: |
+          node -e "
+            const { createPgStore } = require('./lib/store');
+            const st = createPgStore('postgres://postgres:test@127.0.0.1:5432/postgres');
+            st.save(JSON.stringify({ users: { u1: { nickname: 'Compte importé', seen: '2026-10-20' } }, groups: {}, events: {}, sessions: {} })).then(() => st.close());
+          "
+      - name: Installation
+        run: |
+          git branch -f main HEAD
+          sudo git config --global --add safe.directory '*'
+          # la base de test tourne sur cette machine : le pare-feu installé doit la laisser joignable (Neon, lui, est sur Internet)
+          sudo ufw allow 5432/tcp
+          HOST_IP=$(hostname -I | awk '{print $1}')
+          sudo env REPO_URL="file://$GITHUB_WORKSPACE" LEGAL_EDITEUR="Collectif CI" LEGAL_CONTACT="ci@example.org" \
+            SOURCE_DATABASE_URL="postgres://postgres:test@$HOST_IP:5432/postgres" MAP_BBOX="2.34,48.85,2.36,48.86" \
+            bash deploy/install.sh localhost
+      - name: Vérifications
+        run: |
+          set -x
+          curl -fsk https://localhost/healthz | grep -q '"ok":true' || { echo "::error::healthz"; exit 1; }
+          curl -fsk https://localhost/mentions-legales | grep -q 'OVH SAS' || { echo "::error::mentions légales"; exit 1; }
+          curl -fsk https://localhost/mentions-legales | grep -q 'Collectif CI' || { echo "::error::éditeur absent"; exit 1; }
+          r=$(curl -sk -o /dev/null -w '%{http_code} %{redirect_url}' https://www.localhost/abc)
+          [ "$r" = "301 https://localhost/abc" ] || { echo "::error::redirection www : $r"; exit 1; }
+          cd /opt/manif-friend
+          sudo docker compose exec -T app node -e "process.exit(Object.values(require('/data/db.json').users).some((u) => u.nickname === 'Compte importé') ? 0 : 1)" || { echo "::error::base non reprise"; exit 1; }
+          [ "$(sudo stat -c %a .env)" = 600 ] || { echo "::error::.env lisible par tous"; exit 1; }
+          systemctl is-enabled manif-friend-maj.timer
+          sudo ufw status | grep -q 'Status: active' || { echo "::error::pare-feu inactif"; exit 1; }
+          sudo bash deploy/mise-a-jour.sh | grep -q 'Déjà à jour' || { echo "::error::mise à jour"; exit 1; }
+      - name: "Relance du script, secrets et données conservés"
+        run: |
+          before=$(sudo md5sum /opt/manif-friend/.env)
+          sudo env REPO_URL="file://$GITHUB_WORKSPACE" bash deploy/install.sh localhost < /dev/null
+          [ "$(sudo md5sum /opt/manif-friend/.env)" = "$before" ] || { echo "::error::.env modifié"; exit 1; }
+          curl -fsk https://localhost/healthz | grep -q '"ok":true'
+          cd /opt/manif-friend && sudo docker compose exec -T app node -e "process.exit(Object.keys(require('/data/db.json').users).length ? 0 : 1)"

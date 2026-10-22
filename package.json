@@ -1,0 +1,36 @@
+{
+  "name": "manif-friend",
+  "version": "1.0.0",
+  "description": "Carte collaborative temps réel pour manifester en sécurité à Paris (site + PWA)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test --test-concurrency=4 test/unit/*.test.js test/integration/*.test.js test/security/*.test.js",
+    "test:unit": "node --test test/unit/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js",
+    "test:security": "node --test test/security/*.test.js && npm audit --omit=dev --audit-level=high",
+    "test:e2e": "node --test test/e2e/*.test.js",
+    "test:all": "npm test && npm run test:e2e",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=server.js --test-coverage-include=lib/*.js --test-coverage-include=public/utils.js test/unit/*.test.js test/integration/*.test.js test/security/*.test.js",
+    "map": "sh scripts/download-map.sh",
+    "icons": "node scripts/icons.js"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "express": "^4.22.3",
+    "leaflet": "^1.9.4",
+    "pg": "^8.23.1",
+    "protomaps-leaflet": "^5.1.0",
+    "qrcode-generator": "^1.4.4",
+    "socket.io": "^4.8.4"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1",
+    "socket.io-client": "^4.8.1"
+  }
+}

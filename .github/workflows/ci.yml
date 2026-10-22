@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  tests:
+    name: Tests unitaires, intégration et sécurité
+    runs-on: ubuntu-latest
+    # Base Postgres jetable pour tester le stockage DATABASE_URL
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL_TEST: postgres://postgres:test@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Couverture
+        run: npm run coverage
+      - name: Audit des dépendances
+        run: npm audit --omit=dev --audit-level=high
+
+  navigateur:
+    name: Tests navigateur (Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Tests navigateur
+        shell: bash
+        run: |
+          set +e
+          npm run test:e2e 2>&1 | tee e2e.log
+          status=${PIPESTATUS[0]}
+          # nom et message des tests en échec, visibles dans les annotations
+          grep -E -A14 "^not ok" e2e.log | grep -vE "^\s*(---|\.\.\.|duration_ms|type:|location:|failureType|code:|name:|stack|operator|expected|actual)" | head -20 | sed 's/^/::error::/'
+          exit $status
+
+  image:
+    needs: [tests, navigateur]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Les noms d'image Docker doivent être en minuscules
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/manif-friend" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.name.outputs.image }}:latest

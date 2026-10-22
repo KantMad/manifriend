@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Manif Friend</title>
+  <meta name="description" content="Carte collaborative en temps réel pour manifester en sécurité à Paris : cortèges, blocages, gaz, violences, groupes d'ami·es.">
+  <meta name="theme-color" content="#14121f">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/icons/icon.svg" alt="" width="28" height="28">
+      <span>Manif Friend</span>
+    </div>
+    <div class="status">
+      <span id="share-pill" class="pill off" role="button" tabindex="0">Position : off</span>
+      <span id="conn" class="conn" title="Connexion"></span>
+    </div>
+  </header>
+
+  <main id="map" aria-label="Carte de Paris"></main>
+
+  <div id="crosshair" class="crosshair" hidden aria-hidden="true"><span></span></div>
+
+  <div id="place-bar" class="place-bar" hidden>
+    <div class="place-title"><span id="place-emoji"></span> <strong id="place-label"></strong></div>
+    <p class="hint">Déplace la carte pour viser l'endroit exact.</p>
+    <div id="heading-picker" class="heading-picker" hidden>
+      <span class="hint">Direction du cortège :</span>
+      <div class="compass" id="compass"></div>
+    </div>
+    <input id="place-note" type="text" maxlength="140" placeholder="Précision (facultatif) : ex. « rue bloquée par CRS »">
+    <div id="place-meet-fields" class="stack" hidden style="margin-top:0">
+      <div class="row fields">
+        <label class="inline-field">Date <input id="place-date" type="date"></label>
+        <label class="inline-field">Heure <input id="place-time" type="time"></label>
+      </div>
+      <input id="place-meet-note" type="text" maxlength="200" placeholder="Précisions pour le groupe (facultatif)">
+      <p class="hint private-hint">🔒 Visible uniquement par les membres du groupe, jamais sur la carte publique.</p>
+    </div>
+    <div class="row">
+      <button id="place-cancel" class="btn ghost">Annuler</button>
+      <button id="place-send" class="btn primary">Envoyer</button>
+    </div>
+  </div>
+
+  <div id="draw-bar" class="place-bar" hidden>
+    <div class="place-title row between"><span>✊ <strong id="draw-heading">Nouvelle manif</strong></span>
+      <button id="draw-toggle" class="btn small ghost" type="button" aria-expanded="true">Détails ▾</button></div>
+    <p class="hint">Écris les étapes ci-dessous, ou touche la carte pour placer le départ puis chaque point du parcours. <strong id="draw-count">0 point</strong></p>
+    <div id="draw-fields" class="stack" style="margin-top:0">
+      <input id="draw-name" type="text" maxlength="120" placeholder="Titre (ex. Manif intersyndicale République → Nation)">
+      <div class="row fields">
+        <label class="inline-field">Date <input id="draw-date" type="date"></label>
+        <label class="inline-field">Heure <input id="draw-time" type="time"></label>
+      </div>
+      <input id="draw-place" type="text" maxlength="200" placeholder="Lieu de départ (ex. place de la République, Paris)">
+      <input id="draw-note" type="text" maxlength="300" placeholder="Infos (facultatif) : ex. « dispersion place de la Nation »">
+      <label for="draw-steps" class="hint">Parcours : une étape par ligne, du départ à l'arrivée</label>
+      <textarea id="draw-steps" rows="4" maxlength="2000" placeholder="Place de la République&#10;Boulevard de Magenta&#10;Barbès&#10;Place de Clichy"></textarea>
+      <button id="draw-plan" class="btn ghost" type="button">🧭 Tracer le parcours</button>
+      <label class="switch-row"><input type="checkbox" id="draw-publish" checked> Publier (visible par tout le monde)</label>
+    </div>
+    <div class="row">
+      <button id="draw-undo" class="btn ghost">↶ Point</button>
+      <button id="draw-cancel" class="btn ghost">Annuler</button>
+      <button id="draw-save" class="btn primary">Enregistrer</button>
+    </div>
+  </div>
+
+  <div class="map-fabs">
+    <button id="btn-locate" class="fab" title="Me centrer" aria-label="Me centrer sur ma position">◎</button>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <nav class="bottombar">
+    <button id="btn-share" class="nav-btn"><span class="ico">📍</span><span>Position</span></button>
+    <button id="btn-groups" class="nav-btn"><span class="ico">👥</span><span>Groupes</span><span id="groups-badge" class="badge" hidden></span></button>
+    <button id="btn-report" class="nav-btn main"><span class="ico">＋</span><span>Signaler</span></button>
+    <button id="btn-layers" class="nav-btn"><span class="ico">📅</span><span>Manifs</span><span id="events-badge" class="badge" hidden></span></button>
+    <button id="btn-info" class="nav-btn"><span class="ico">ℹ️</span><span>Infos</span></button>
+  </nav>
+
+  <div id="backdrop" class="backdrop" hidden></div>
+
+  <!-- Partage de position -->
+  <section id="sheet-share" class="sheet" hidden aria-label="Partage de position">
+    <div class="grab"></div>
+    <h2>Partager ma position</h2>
+    <div class="choices">
+      <label class="choice">
+        <input type="radio" name="mode" value="off">
+        <div><strong>🙈 Ne pas partager</strong><p>Tu vois la carte et les signalements, personne ne te voit.</p></div>
+      </label>
+      <label class="choice">
+        <input type="radio" name="mode" value="anon">
+        <div><strong>🕶️ Anonyme</strong><p>Tes groupes voient « membre anonyme » à ta position. Tu comptes dans la carte de foule publique (zones de 3 personnes minimum).</p></div>
+      </label>
+      <label class="choice">
+        <input type="radio" name="mode" value="named">
+        <div><strong>🙋 Avec mon pseudo</strong><p>Les membres de tes groupes voient ton pseudo à ta position. Le public ne voit que la carte de foule agrégée.</p></div>
+      </label>
+    </div>
+    <label class="switch-row"><input type="checkbox" id="wakelock"> Garder l'écran allumé (le partage s'arrête si le téléphone se verrouille)</label>
+    <p class="hint">Ta position n'est jamais enregistrée : elle reste en mémoire et disparaît 5 min après ta dernière mise à jour.</p>
+  </section>
+
+  <!-- Signaler -->
+  <section id="sheet-report" class="sheet" hidden aria-label="Signaler">
+    <div class="grab"></div>
+    <h2>Que se passe-t-il ?</h2>
+    <div id="report-types" class="type-grid"></div>
+    <p class="hint">Les signalements sont anonymes et disparaissent automatiquement. Ne signale que ce que tu vois.</p>
+  </section>
+
+  <!-- Groupes -->
+  <section id="sheet-groups" class="sheet tall" hidden aria-label="Groupes">
+    <div class="grab"></div>
+    <h2>Mes groupes</h2>
+    <div class="card" id="account-card">
+      <div id="account-in" class="stack" hidden>
+        <div class="row between">
+          <span>Connecté·e : <strong id="my-nick">—</strong></span>
+          <button id="edit-nick" class="btn small ghost">Modifier</button>
+        </div>
+        <div class="row wrap">
+          <button id="account-password" class="btn small ghost" type="button">🔑 Changer le mot de passe</button>
+          <button id="account-logout" class="btn small ghost" type="button">Se déconnecter</button>
+        </div>
+      </div>
+      <div id="account-out" class="stack" hidden>
+        <p class="hint" style="margin:0">Pour rejoindre un groupe, partager ta position ou signaler, il faut un compte : juste un pseudo et un mot de passe, sans e-mail.</p>
+        <div class="row">
+          <button id="account-register" class="btn primary" type="button">Créer un compte</button>
+          <button id="account-login" class="btn ghost" type="button">Se connecter</button>
+        </div>
+      </div>
+    </div>
+    <div id="group-list"></div>
+    <details class="card" id="join-box">
+      <summary>🔑 Rejoindre un groupe</summary>
+      <form id="join-form" class="stack">
+        <input id="join-code" type="text" maxlength="12" placeholder="Code d'invitation (ex. K7M2QX9P)" autocomplete="off" autocapitalize="characters">
+        <button class="btn primary" type="submit">Envoyer une demande</button>
+        <p class="hint">Le plus simple : scanne le QR code d'un·e admin avec l'appareil photo, ou ouvre le lien qu'on t'a envoyé. Un·e admin doit ensuite accepter ta demande.</p>
+      </form>
+    </details>
+    <details class="card">
+      <summary>➕ Créer un groupe</summary>
+      <form id="create-form" class="stack">
+        <input id="create-name" type="text" maxlength="40" placeholder="Nom du groupe (ex. Les potes de Belleville)" required>
+        <input id="create-desc" type="text" maxlength="140" placeholder="Description (facultatif)">
+        <button class="btn primary" type="submit">Créer</button>
+        <p class="hint">Tu en seras administrateur·ice et tu valideras chaque demande.</p>
+      </form>
+    </details>
+  </section>
+
+  <!-- Calques -->
+  <section id="sheet-layers" class="sheet tall" hidden aria-label="Manifs et carte">
+    <div class="grab"></div>
+    <h2>Manifs à venir</h2>
+    <input id="event-filter" type="text" placeholder="🔍 Ville, titre… (ex. Lyon)" autocomplete="off">
+    <div id="event-list" class="event-list"></div>
+    <p class="hint">Manifs repérées dans les agendas militants (Démosphère, Mobilizon, Paris-luttes.info) et vérifiées par des organisateur·ices avant publication. Vérifie toujours auprès de la source.</p>
+    <h3>Afficher sur la carte</h3>
+    <label class="switch-row"><input type="checkbox" id="layer-reports" checked> Signalements</label>
+    <label class="switch-row"><input type="checkbox" id="layer-density" checked> Foule (carte agrégée publique)</label>
+    <label class="switch-row"><input type="checkbox" id="layer-groups" checked> Membres et rendez-vous de mes groupes</label>
+    <label class="switch-row"><input type="checkbox" id="layer-routes" checked> Manifs (départs et parcours)</label>
+    <label class="switch-row"><input type="checkbox" id="dark-map"> Carte sombre (la nuit, économise la batterie)</label>
+    <label class="switch-row"><input type="checkbox" id="alerts" checked> Alertes à moins de 400 m (vibration)</label>
+    <h3>Légende</h3>
+    <div id="legend" class="legend"></div>
+  </section>
+
+  <!-- Espace organisateur·ices : validation des manifs importées -->
+  <section id="sheet-orga" class="sheet tall" hidden aria-label="Espace organisateur·ices">
+    <div class="grab"></div>
+    <h2>Espace organisateur·ices</h2>
+    <p class="hint">Les manifs sûres des agendas modérés (lieu précis, heure, manif clairement annoncée) sont publiées automatiquement 🤖 : tu peux les retirer. Les autres arrivent ici : vérifie la source, corrige le lieu ou trace le parcours, puis publie. Ne publie que des manifs publiques et déclarées.</p>
+    <div class="row wrap">
+      <button id="orga-add" class="btn primary" type="button">➕ Ajouter une manif</button>
+      <button id="orga-import" class="btn ghost" type="button">↻ Relancer l'import</button>
+    </div>
+    <div id="orga-report" class="card import-report"></div>
+    <h3>À valider <span id="orga-pending-count"></span></h3>
+    <div id="orga-pending" class="event-list"></div>
+    <h3>Publiées</h3>
+    <div id="orga-published" class="event-list"></div>
+    <details class="card"><summary>Refusées</summary><div id="orga-rejected" class="event-list"></div></details>
+  </section>
+
+  <!-- Infos -->
+  <section id="sheet-info" class="sheet tall" hidden aria-label="Informations">
+    <div class="grab"></div>
+    <h2>Manif Friend</h2>
+    <p>Une carte partagée pour se retrouver, éviter les mouvements de panique et savoir en temps réel où va le cortège, ce qui est bloqué et où il y a des gaz ou des violences.</p>
+    <div class="card urgent">
+      <strong>Urgences</strong>
+      <div class="row wrap">
+        <a class="btn danger" href="tel:112">📞 112</a>
+        <a class="btn ghost" href="tel:15">SAMU 15</a>
+        <a class="btn ghost" href="tel:18">Pompiers 18</a>
+        <a class="btn ghost" href="sms:114">SMS 114</a>
+      </div>
+    </div>
+    <h3>Garder son calme</h3>
+    <ul class="tips">
+      <li>Avant de partir : un point de rendez-vous si on se perd, téléphone chargé, eau.</li>
+      <li>Gaz : s'éloigner face au vent, ne pas se frotter les yeux, rincer à l'eau ou au sérum physiologique.</li>
+      <li>Foule qui pousse : rester sur les côtés, ne pas courir, bras devant la poitrine.</li>
+      <li>Vérifie un signalement avant de le relayer : 👍 confirme, 👎 infirme (3 👎 le suppriment).</li>
+    </ul>
+    <h3>Vie privée</h3>
+    <ul class="tips">
+      <li>Pas d'e-mail ni de téléphone : un pseudo et un mot de passe suffisent. Le serveur ne garde que des empreintes du mot de passe. La carte se consulte sans compte.</li>
+      <li>Les positions et signalements ne sont jamais écrits sur disque et expirent automatiquement.</li>
+      <li>Seuls les membres acceptés d'un groupe voient ses membres. Le public ne voit que des zones de foule de 3 personnes ou plus.</li>
+    </ul>
+    <details class="card" id="organizer-box" hidden>
+      <summary>📋 Espace organisateur·ices</summary>
+      <form id="organizer-form" class="stack">
+        <p class="hint">Réservé aux personnes qui valident les manifs et tracent les parcours déclarés.</p>
+        <input id="organizer-key" type="password" placeholder="Clé organisateur·ice" autocomplete="off">
+        <button class="btn primary" type="submit">Déverrouiller</button>
+      </form>
+      <div id="organizer-tools" class="stack" hidden>
+        <button id="orga-open" class="btn primary" type="button">📋 Ouvrir l'espace organisateur·ices</button>
+      </div>
+    </details>
+    <h3>En cas d'arrestation ou de perte du téléphone</h3>
+    <ul class="tips">
+      <li><strong>Touche 3 fois rapidement le logo</strong> en haut à gauche : l'appli efface immédiatement tes données, quitte tes groupes et se vide, sans confirmation.</li>
+      <li>Verrouille ton téléphone par code (pas seulement par empreinte ou visage).</li>
+    </ul>
+    <button id="open-tour" class="btn ghost" style="width:100%;margin-top:12px">🎓 Revoir la visite guidée</button>
+    <button id="install" class="btn primary" hidden>📲 Installer l'application</button>
+    <button id="forget" class="btn danger outline">🗑️ Effacer toutes mes données</button>
+    <p class="hint legal-links"><a href="/confidentialite" target="_blank" rel="noopener">Confidentialité</a> · <a href="/mentions-legales" target="_blank" rel="noopener">Mentions légales</a> · Carte © contributeurs OpenStreetMap.</p>
+  </section>
+
+  <!-- Visite guidée (premier lancement) -->
+  <div id="tour" class="tour" hidden role="dialog" aria-modal="true" aria-labelledby="tour-title">
+    <div class="tour-hole" aria-hidden="true"></div>
+    <div class="tour-card">
+      <div class="tour-top">
+        <span id="tour-step" class="tour-step"></span>
+        <button id="tour-skip" class="tour-skip" type="button">Passer</button>
+      </div>
+      <div class="tour-head"><span id="tour-icon" class="tour-icon" aria-hidden="true"></span><h3 id="tour-title"></h3></div>
+      <p id="tour-text" class="tour-text"></p>
+      <p id="tour-goal" class="tour-goal"></p>
+      <div id="tour-dots" class="tour-dots" aria-hidden="true"></div>
+      <div class="row">
+        <button id="tour-prev" class="btn ghost" type="button">← Précédent</button>
+        <button id="tour-next" class="btn primary" type="button">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR code d'invitation -->
+  <dialog id="qr-modal">
+    <form method="dialog" class="stack qr-box">
+      <h3 id="qr-title"></h3>
+      <p class="hint">Ton ami·e scanne ce code avec l'appareil photo de son téléphone, puis envoie sa demande. Tu devras l'accepter.</p>
+      <div id="qr-img" class="qr-img"></div>
+      <code id="qr-code" class="qr-code"></code>
+      <button class="btn primary" value="ok">Fermer</button>
+    </form>
+  </dialog>
+
+  <!-- Consentement (données sensibles : RGPD, article 9) -->
+  <dialog id="consent" aria-labelledby="consent-title">
+    <form method="dialog" class="stack">
+      <h3 id="consent-title">Avant de partager</h3>
+      <p class="hint">Ton compte, tes groupes et ta position peuvent révéler que tu participes à une manifestation, donc tes opinions politiques. Pour les utiliser, il nous faut ton accord explicite.</p>
+      <ul class="tips">
+        <li>Ta position n'est gardée qu'en mémoire, 5 minutes au plus, jamais d'historique.</li>
+        <li>Ni e-mail, ni numéro de téléphone : juste un pseudo et un mot de passe.</li>
+        <li>Tu peux arrêter à tout moment et tout effacer (3 touches sur le logo).</li>
+      </ul>
+      <p class="hint"><a href="/confidentialite" target="_blank" rel="noopener">Lire la politique de confidentialité</a></p>
+      <div class="row">
+        <button value="cancel" class="btn ghost">Refuser</button>
+        <button value="ok" class="btn primary" id="consent-ok">J'accepte</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Compte : création, connexion, mot de passe oublié, changement de mot de passe -->
+  <dialog id="auth" aria-labelledby="auth-title">
+    <form id="auth-form" class="stack" method="dialog">
+      <h3 id="auth-title">Créer un compte</h3>
+      <p id="auth-hint" class="hint"></p>
+      <input id="auth-name" name="username" type="text" maxlength="24" autocomplete="username" placeholder="Pseudo (évite ton vrai nom)" autocapitalize="off" spellcheck="false">
+      <input id="auth-code" type="text" maxlength="24" autocomplete="off" placeholder="Code de secours (XXXX-XXXX-XXXX-XXXX)" autocapitalize="characters" spellcheck="false">
+      <input id="auth-old" type="password" maxlength="200" autocomplete="current-password" placeholder="Mot de passe actuel">
+      <input id="auth-pass" name="password" type="password" maxlength="200" autocomplete="new-password" placeholder="Mot de passe (8 caractères minimum)">
+      <label class="switch-row hint"><input type="checkbox" id="auth-show"> Afficher le mot de passe</label>
+      <p id="auth-error" class="auth-error" role="alert"></p>
+      <div class="row">
+        <button value="cancel" class="btn ghost" type="button" id="auth-cancel">Annuler</button>
+        <button class="btn primary" type="submit" id="auth-ok">Créer mon compte</button>
+      </div>
+      <p class="hint auth-links">
+        <button type="button" class="link" id="auth-to-login">J'ai déjà un compte</button>
+        <button type="button" class="link" id="auth-to-register">Créer un compte</button>
+        <button type="button" class="link" id="auth-to-recover">Mot de passe oublié ?</button>
+      </p>
+    </form>
+  </dialog>
+
+  <!-- Code de secours, affiché une seule fois -->
+  <dialog id="recovery" aria-labelledby="recovery-title">
+    <form method="dialog" class="stack">
+      <h3 id="recovery-title">📝 Ton code de secours</h3>
+      <p class="hint">Sans e-mail, c'est le seul moyen de retrouver ton compte si tu oublies ton mot de passe. Note-le sur papier ou dans un gestionnaire de mots de passe. Il ne sera plus jamais affiché.</p>
+      <code id="recovery-code" class="qr-code"></code>
+      <button id="recovery-copy" class="btn ghost" type="button">Copier le code</button>
+      <label class="switch-row"><input type="checkbox" id="recovery-done"> J'ai noté mon code</label>
+      <button id="recovery-ok" class="btn primary" value="ok" disabled>Continuer</button>
+    </form>
+  </dialog>
+
+  <!-- Fenêtre modale générique -->
+  <dialog id="modal">
+    <form method="dialog" class="stack">
+      <h3 id="modal-title"></h3>
+      <p id="modal-text" class="hint"></p>
+      <input id="modal-input" type="text" maxlength="24">
+      <div class="row">
+        <button value="cancel" class="btn ghost" id="modal-cancel">Annuler</button>
+        <button value="ok" class="btn primary" id="modal-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/vendor/qrcode/qrcode.js"></script>
+  <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/vendor/protomaps/protomaps-leaflet.js"></script>
+  <script src="/utils.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

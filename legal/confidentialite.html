@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité · Manif Friend</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/legal.css">
+</head>
+<body class="legal">
+<main>
+<p><a href="/">← Retour à la carte</a></p>
+<h1>Politique de confidentialité</h1>
+<p class="hint">Version {{VERSION}} — en vigueur depuis le {{DATE}}.</p>
+{{AVERTISSEMENT}}
+
+<h2>En bref</h2>
+<ul>
+  <li>La carte se consulte sans compte. Pour agir (groupes, position, signalements), un compte suffit : <strong>un pseudo et un mot de passe</strong>, ni e-mail, ni numéro de téléphone, ni nom.</li>
+  <li>Ta position n'est <strong>jamais enregistrée sur disque</strong> : elle reste en mémoire et disparaît 5 minutes après ta dernière mise à jour.</li>
+  <li>Tu choisis si tu partages ta position, et avec qui : personne, ou seulement les membres de tes groupes (anonymement ou avec ton pseudo).</li>
+  <li>Aucune publicité, aucun outil de mesure d'audience, aucune revente de données.</li>
+  <li>Tu peux tout effacer à tout moment, compte compris : Infos → « Effacer toutes mes données », ou 3 touches rapides sur le logo.</li>
+</ul>
+
+<h2>1. Responsable du traitement</h2>
+<p>{{EDITEUR}}<br>Contact : {{CONTACT}}</p>
+
+<h2>2. Pourquoi ces données sont sensibles</h2>
+<p>Le fait d'être présent·e à une manifestation, ou membre d'un groupe qui s'y rend, peut révéler des <strong>opinions politiques ou l'appartenance syndicale</strong>. Ce sont des données dites « sensibles » (article 9 du RGPD). Elles ne sont traitées qu'avec ton <strong>consentement explicite</strong>, demandé dans l'application avant la création de ton compte et avant tout partage de position.</p>
+
+<h2>3. Données traitées, finalités, base légale et durée</h2>
+<table>
+  <thead><tr><th>Donnée</th><th>Pourquoi</th><th>Base légale</th><th>Conservation</th></tr></thead>
+  <tbody>
+    <tr><td>Compte : pseudo, empreinte du mot de passe et du code de secours (scrypt), dates de création et de dernière connexion</td><td>Te reconnaître sur tous tes appareils et protéger l'accès à tes groupes</td><td>Consentement explicite (art. 6.1.a et 9.2.a RGPD)</td><td>Jusqu'à suppression par toi ; supprimé automatiquement après 1 an sans connexion</td></tr>
+    <tr><td>Sessions (empreinte du jeton de chaque appareil connecté)</td><td>Te garder connecté·e sans redemander le mot de passe</td><td>Consentement explicite</td><td>Jusqu'à déconnexion, changement de mot de passe ou 1 an sans utilisation</td></tr>
+    <tr><td>Identifiant aléatoire de l'appareil d'un simple visiteur (jamais enregistré)</td><td>Afficher la carte sans compte</td><td>Intérêt légitime (fonctionnement du service)</td><td>Mémoire uniquement, le temps de la connexion</td></tr>
+    <tr><td>Position GPS (si tu la partages)</td><td>Te montrer aux membres de tes groupes ; carte de foule anonyme (zones d'au moins 3 personnes)</td><td>Consentement explicite (art. 6.1.a et 9.2.a RGPD)</td><td>Mémoire uniquement, effacée 5 min après la dernière mise à jour</td></tr>
+    <tr><td>Groupes, demandes d'adhésion, rendez-vous de groupe</td><td>Te permettre de retrouver tes ami·es</td><td>Consentement explicite</td><td>Groupes supprimés après 30 jours sans activité, ou immédiatement sur demande</td></tr>
+    <tr><td>Signalements (gaz, blocage…) et votes</td><td>Informer en temps réel les personnes présentes</td><td>Intérêt légitime (sécurité des personnes) ; anonymes pour le public</td><td>Mémoire uniquement, 20 à 60 min</td></tr>
+    <tr><td>Adresse IP</td><td>Limiter les abus (force brute, robots)</td><td>Intérêt légitime (sécurité)</td><td>Mémoire uniquement, 1 heure au plus ; jamais enregistrée dans les journaux</td></tr>
+    <tr><td>Manifs publiques (titre, date, lieu, lien vers la source)</td><td>Afficher les manifs à venir</td><td>Intérêt légitime (information du public)</td><td>Jusqu'au lendemain de la manif</td></tr>
+    <tr><td>Nom et empreinte de la clé des organisateur·ices</td><td>Valider les manifs, tracer les parcours, retirer les faux signalements</td><td>Intérêt légitime</td><td>Jusqu'à révocation de la clé</td></tr>
+    <tr><td>Sauvegardes (comptes, groupes, manifs)</td><td>Pouvoir restaurer le service en cas de panne</td><td>Intérêt légitime</td><td>14 jours</td></tr>
+  </tbody>
+</table>
+<p>Les rassemblements non déclarés ne sont jamais publiés : un rendez-vous fixé dans un groupe n'est visible que par ses membres.</p>
+
+<h2>4. Ce qui est stocké sur ton appareil</h2>
+<p>L'application enregistre dans ton navigateur ton jeton de session (jamais ton mot de passe) et tes réglages (mode de partage, carte sombre, dernière zone affichée, visite guidée vue). Ces informations sont <strong>strictement nécessaires</strong> au fonctionnement et ne servent à aucun suivi : elles ne nécessitent pas de bandeau de cookies. Le bouton « Effacer toutes mes données » les supprime.</p>
+
+<h2>5. Qui a accès à tes données</h2>
+<ul>
+  <li><strong>Les membres de tes groupes</strong>, et seulement eux, voient ta position si tu la partages (avec ton pseudo ou en « membre anonyme »). Personne n'entre dans un groupe sans l'accord d'un·e admin.</li>
+  <li><strong>Le public</strong> ne voit que les signalements (anonymes), les manifs publiées et une carte de foule par zones d'au moins 3 personnes.</li>
+  <li><strong>L'hébergeur</strong> ({{HEBERGEUR}}), en tant que sous-traitant technique, dont les serveurs font fonctionner le service.</li>
+  <li>{{CARTE}}</li>
+  {{BASE}}
+  <li>Pour placer les manifs importées sur la carte, le serveur envoie au <strong>géocodeur de l'IGN</strong> (Géoplateforme, France) uniquement l'adresse publique de la manif, jamais une donnée te concernant.</li>
+</ul>
+<p>Aucune donnée n'est vendue ni cédée. Comme tout service hébergé, le responsable du traitement et l'hébergeur peuvent être tenus de répondre à une réquisition judiciaire : c'est pourquoi le service conserve le moins de données possible, et les positions jamais sur disque.</p>
+
+<h2>6. Tes droits</h2>
+<p>Tu disposes des droits d'accès, de rectification, d'effacement, de limitation, d'opposition et de retrait du consentement à tout moment. La plupart s'exercent directement dans l'application :</p>
+<ul>
+  <li><strong>Retirer ton consentement / supprimer ton compte et tout effacer</strong> : Infos → « Effacer toutes mes données » (ou 3 touches sur le logo) ;</li>
+  <li><strong>Te déconnecter d'un appareil, changer de mot de passe</strong> : onglet Groupes ;</li>
+  <li><strong>Arrêter de partager ta position</strong> : Position → « Ne pas partager » ;</li>
+  <li><strong>Modifier ton pseudo, quitter un groupe</strong> : onglet Groupes.</li>
+</ul>
+<p>Pour toute autre demande : {{CONTACT}}. Le service ne connaissant ni ton nom ni ton adresse e-mail, il faudra indiquer ton pseudo et le nom de tes groupes. Tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr/fr/plaintes" rel="noopener noreferrer">CNIL</a>.</p>
+
+<h2>7. Mineur·es</h2>
+<p>Si tu as moins de 15 ans, l'accord d'un de tes parents est nécessaire pour créer un compte ou partager ta position (article 45 de la loi Informatique et Libertés).</p>
+
+<h2>8. Sécurité</h2>
+<p>Connexion chiffrée (HTTPS). Mots de passe, codes de secours, jetons de session et clés des organisateur·ices ne sont stockés que sous forme d'empreinte : une copie de la base ne permet pas de se connecter. Les essais de mot de passe sont limités. Journaux techniques sans adresse IP, position ni pseudo. Le code source est public et vérifiable.</p>
+<p>Sans e-mail, un mot de passe oublié ne peut être remplacé qu'avec le <strong>code de secours</strong> affiché une seule fois à la création du compte : garde-le en lieu sûr.</p>
+
+<h2>9. Modifications</h2>
+<p>En cas de changement important de cette politique, ton consentement te sera redemandé dans l'application.</p>
+</main>
+</body>
+</html>

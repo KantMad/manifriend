@@ -1,0 +1,31 @@
+name: Surveillance du site
+
+# Vérifie toutes les heures que le site en ligne répond. En cas d'échec, GitHub envoie un e-mail
+# au propriétaire du dépôt. À activer en définissant la variable de dépôt SITE_URL
+# (Settings → Secrets and variables → Actions → Variables), ex. https://manif-friend.fr
+# Pour des alertes plus rapides (toutes les 5 min), voir DEPLOY.md (UptimeRobot / Uptime Kuma).
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verifier:
+    if: vars.SITE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Le site répond
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          for i in 1 2 3; do
+            if curl -fsS --max-time 15 "$SITE_URL/healthz" | grep -q '"ok":true' && curl -fsS --max-time 15 "$SITE_URL/" | grep -q 'Manif Friend'; then
+              echo "Site en ligne"; exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::Le site $SITE_URL ne répond pas"
+          exit 1

@@ -1,0 +1,43 @@
+name: Captures avec la carte de Paris
+
+# Télécharge la vraie carte de Paris, lance l'appli avec des données de démo
+# et publie des captures d'écran sur la branche « captures ».
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['public/**', 'server.js', 'scripts/screenshots.js', 'scripts/download-map.sh']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: captures
+  cancel-in-progress: true
+
+jobs:
+  captures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Captures avec les tuiles OpenStreetMap (hébergement sans carte, ex. Render)
+        run: SHOTS_MAP=osm node scripts/screenshots.js captures/osm
+      - name: Carte de Paris
+        run: npm run map
+      - run: node scripts/screenshots.js captures
+      - name: Publication sur la branche « captures »
+        run: |
+          cd captures
+          git init -q -b captures
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf '# Captures\n\nGénérées automatiquement depuis %s.\n' "$GITHUB_SHA" > README.md
+          git add -A
+          git commit -qm "Captures $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" captures

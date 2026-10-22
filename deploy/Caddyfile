@@ -1,0 +1,13 @@
+# Caddy n'écrit pas de journal d'accès tant qu'aucune directive « log » n'est ajoutée : on n'en ajoute pas.
+# DOMAIN : adresse principale (ex. www.manifriend.com) ; EXTRA_DOMAINS : autres adresses redirigées
+# vers elle (ex. manifriend.com). Certificats HTTPS obtenus et renouvelés automatiquement.
+{$DOMAIN} {$EXTRA_DOMAINS} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	@autre not host {$DOMAIN}
+	redir @autre https://{$DOMAIN}{uri} permanent
+	reverse_proxy app:3000
+}

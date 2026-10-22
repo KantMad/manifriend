@@ -1,0 +1,48 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+X-WR-TIMEZONE:Europe/Paris
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/1
+DTSTART:20261017T120000Z
+GEO:00;0
+LOCATION:Toulouse 31000\, \nPlace du Capitole \nToulouse
+SUMMARY:Manifestation pour les services publics\, contre la réforme
+URL:https://toulouse.demosphere.net/rv/1
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/2
+DTSTART;VALUE=DATE:20261018
+LOCATION:Toulouse 31200\, \nSalle municipale
+SUMMARY:Réunion publique du collectif
+URL:https://toulouse.demosphere.net/rv/2
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/3
+DTSTART:20261019T160000Z
+LOCATION:Partout\, \nPartout en France
+SUMMARY:Journée d'action nationale
+URL:https://toulouse.demosphere.net/rv/3
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/4
+DTSTART:20261020T130000Z
+GEO:43.6045;1.4440
+LOCATION:Toulouse\, \nMétro Jean Jaurès
+SUMMARY:Rassemblement contre les expulsions
+URL:javascript:alert(1)
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/5
+DTSTART:20261021T130000Z
+LOCATION:Toulouse\, \nPlace Arnaud Bernard
+SUMMARY:Rassemblement sauvage devant la préfecture
+URL:https://toulouse.demosphere.net/rv/5
+END:VEVENT
+BEGIN:VEVENT
+UID:https://toulouse.demosphere.net/rv/6
+DTSTART:20261001T130000Z
+LOCATION:Toulouse\, \nPlace du Capitole
+SUMMARY:Manifestation passée
+URL:https://toulouse.demosphere.net/rv/6
+END:VEVENT
+END:VCALENDAR

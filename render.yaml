@@ -1,0 +1,44 @@
+# Déploiement de test gratuit sur Render (bouton « Deploy to Render » du README).
+# Limites de l'offre gratuite : mise en veille après 15 min sans visite (réveil en ~1 min),
+# pas de disque : comptes, groupes et manifs sont gardés dans une base Postgres gratuite (DATABASE_URL, ex. Neon
+# à Francfort) ; sans elle, tout est effacé à chaque redémarrage ou redéploiement.
+# Carte : Île-de-France intégrée à l'image (Dockerfile.render) ; ailleurs, tuiles OpenStreetMap.
+services:
+  - type: web
+    name: manif-friend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /healthz
+    envVars:
+      - key: SERVER_SECRET
+        generateValue: true
+      # Clé principale de l'espace organisateur·ices : à lire dans Render > Environment
+      - key: ADMIN_KEY
+        generateValue: true
+      # Render est derrière un proxy : l'IP réelle est dans X-Forwarded-For
+      - key: TRUST_PROXY
+        value: "1"
+      - key: IMPORT_EVERY_MIN
+        value: "120"
+      - key: LEGAL_TEST
+        value: "1"
+      - key: LEGAL_HEBERGEUR
+        value: Render Services, Inc.
+      - key: LEGAL_HEBERGEUR_ADRESSE
+        value: 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis
+      # Base Postgres (adresse de connexion fournie par Neon, région Francfort) : voir DEPLOY.md
+      - key: DATABASE_URL
+        sync: false
+      - key: LEGAL_BASE
+        value: Neon Inc. (serveurs à Francfort, Allemagne)
+      # Demandés à la création (affichés dans les mentions légales et la politique de confidentialité)
+      - key: LEGAL_EDITEUR
+        sync: false
+      - key: LEGAL_DIRECTEUR
+        sync: false
+      - key: LEGAL_CONTACT
+        sync: false

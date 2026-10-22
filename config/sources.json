@@ -1,0 +1,101 @@
+{
+  "_doc": "Sources d'agenda importées automatiquement. Les manifs sûres sont publiées automatiquement (voir autoPublish), les autres attendent la validation d'un·e organisateur·ice. Démosphère Paris/IDF est fermé (annonce sur leur site) : Paris est couvert par Paris-luttes.info et Mobilizon. Pour chaque Démosphère, « city » est la ville de référence : les lieux trouvés à plus de 120 km sont écartés.",
+  "daysAhead": 30,
+  "_autoPublish": "Sources dont les manifs sûres sont publiées sans validation : agendas modérés (Démosphère, Paris-luttes.info). Conditions : lieu précis, heure connue, titre annonçant clairement une manif, ni blocage ni occupation, dans les maxDays jours. Mobilizon (ouvert à tous) reste validé à la main.",
+  "autoPublish": { "demosphere": true, "paris-luttes": true, "mobilizon": false, "maxDays": 14 },
+  "demosphere": [
+    {
+      "id": "toulouse",
+      "city": "Toulouse"
+    },
+    {
+      "id": "rennes",
+      "city": "Rennes"
+    },
+    {
+      "id": "lille",
+      "city": "Lille"
+    },
+    {
+      "id": "gironde",
+      "city": "Bordeaux"
+    },
+    {
+      "id": "strasbourgfurieuse",
+      "city": "Strasbourg"
+    },
+    {
+      "id": "nice",
+      "city": "Nice"
+    },
+    {
+      "id": "pyrenees",
+      "city": "Pau"
+    },
+    {
+      "id": "tarn",
+      "city": "Albi"
+    },
+    {
+      "id": "sarthe",
+      "city": "Le Mans"
+    },
+    {
+      "id": "lot",
+      "city": "Cahors"
+    },
+    {
+      "id": "ariege",
+      "city": "Foix"
+    },
+    {
+      "id": "gard",
+      "city": "Nîmes"
+    },
+    {
+      "id": "carcassonne",
+      "city": "Carcassonne"
+    },
+    {
+      "id": "dunkerque",
+      "city": "Dunkerque"
+    },
+    {
+      "id": "poitiers",
+      "city": "Poitiers"
+    },
+    {
+      "id": "berry",
+      "city": "Bourges"
+    },
+    {
+      "id": "aveyron",
+      "city": "Rodez"
+    },
+    {
+      "id": "05",
+      "city": "Gap"
+    },
+    {
+      "id": "paris",
+      "city": "Paris"
+    }
+  ],
+  "mobilizon": {
+    "instances": [
+      "https://mobilizon.fr"
+    ],
+    "terms": [
+      "manifestation",
+      "rassemblement",
+      "marche",
+      "grève",
+      "mobilisation",
+      "cortège"
+    ]
+  },
+  "parisLuttes": {
+    "enabled": true,
+    "months": 2
+  }
+}
